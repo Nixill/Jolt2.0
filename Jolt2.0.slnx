@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/CSharp.Nixill/">
+    <Project Path="CSharp.Nixill/CSharp.Nixill/CSharp.Nixill.csproj" />
+  </Folder>
+  <Project Path="Jolt2.0/Jolt2.0.csproj" />
+</Solution>

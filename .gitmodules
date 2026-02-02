@@ -1,0 +1,6 @@
+[submodule "CSharp.Nixill"]
+	path = CSharp.Nixill
+	url = ../CSharp.Nixill/
+[submodule "CSharp.Nixill.OBSWS"]
+	path = CSharp.Nixill.OBSWS
+	url = ../CSharp.Nixill.OBSWS/
