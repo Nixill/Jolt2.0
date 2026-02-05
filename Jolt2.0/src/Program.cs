@@ -6,6 +6,7 @@ namespace Nixill.Streaming.JoltBot;
 
 public static class JoltMain
 {
+  /// <summary>The main program method.</summary>
   public static void Main(string[] args)
   {
     // Set current directory for output and stuff

@@ -1,9 +1,9 @@
 [submodule "CSharp.Nixill"]
 	path = CSharp.Nixill
-	url = ../CSharp.Nixill/
+	url = https://github.com/Nixill/CSharp.Nixill/
 [submodule "CSharp.Nixill.OBSWS"]
 	path = CSharp.Nixill.OBSWS
-	url = ../CSharp.Nixill.OBSWS/
+	url = https://github.com/Nixill/CSharp.Nixill.OBSWS/
 [submodule "CSharp.Nixill.JSON"]
 	path = CSharp.Nixill.JSON
 	url = ../CSharp.Nixill.JSON/

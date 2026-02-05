@@ -46,7 +46,7 @@
       return;
     }
 
-    await JoltTwitchAccountClient.Get(IsChatBot).UseAuthCode(Code!, Scope!, NavMan.Uri[0..NavMan.Uri.IndexOf('?')]);
+    await JoltTwitchAccountClient.Get(IsChatBot).UseAuthCode(Code!, NavMan.Uri[0..NavMan.Uri.IndexOf('?')]);
     Text = "Success! (You can close this page now.)";
     NavMan.NavigateTo("/twitch/accounts");
     return;

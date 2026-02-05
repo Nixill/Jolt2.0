@@ -6,20 +6,21 @@
 
 <MudText>This page lists the Twitch accounts to which the bot is connected. You may connect a new account or update a connection using the link at the bott om of the page.</MudText>
 
-@{
-  var streamerAccounts = Data.Twitch.Streamer.Accounts;
-
-  <MudContainer Class="d-flex">
+<MudContainer Class="d-flex">
+  @foreach (bool isChatBot in (bool[])[false, true]){
+    var accounts = Data.Twitch.StreamerOrChatBot(isChatBot).Accounts;
+    var jtac = JoltTwitchAccountClient.Get(isChatBot);
     <MudContainer Class="d-block">
-      <MudText Class="" Typo="Typo.h2">Streamer accounts:</MudText>
-      @if (streamerAccounts.Any())
+      <MudText Class="" Typo="Typo.h2">@(isChatBot ? "Chat bot" : "Streamer") accounts:</MudText>
+      @if (accounts.Any())
       {
-        <MudList T="string" @bind-SelectedValue="ActiveStreamer" @bind-SelectedValue:after="() => JoltTwitchAccountClient.Streamer.SetActiveAccount(ActiveStreamer)">
-          @foreach (var acct in streamerAccounts)
+        <MudList T="string" @bind-SelectedValue="Active[isChatBot]"
+          @bind-SelectedValue:after="() => jtac.SetActiveAccount(Active[isChatBot])">
+          @foreach (var acct in accounts)
           {
-            bool usable = JoltTwitchAccountClient.Streamer.HasAllAuthScopes(acct.Scopes);
+            bool usable = jtac.HasAllAuthScopes(acct.Scopes);
             <MudListItem Value="@acct.Name" Disabled="@(!usable)">
-              <MudAvatar>
+              <MudAvatar Style="vertical-align: middle;">
                 <MudImage Src="@acct.AvatarURL"/>
               </MudAvatar>
               @acct.Name
@@ -28,22 +29,26 @@
                 <MudIcon Icon="@Icons.Material.Filled.Error" Color="@Color.Error" />
                 @:Missing scopes, must be reauthorized (use add button below).
               }
-              <MudIconButton OnClick="() => RemoveAccount(acct.Name, false)" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" />
+              <MudIconButton Style="vertical-align: middle;" Class="d-inline" OnClick="() => RemoveAccount(acct.Name, isChatBot)"
+                Icon="@Icons.Material.Filled.Delete" Color="Color.Error" />
             </MudListItem>
           }
         </MudList>
       } else {
-        <MudText>There are no connected streamer accounts! Use the button below to add one.</MudText>
+        <MudText>There are no connected @(isChatBot ? "chat bot" : "streamer") accounts! Use the button below to add one.</MudText>
       }
 
-      <MudButton StartIcon="@Icons.Material.Filled.Add" Href="/twitch/accounts/add?isChatBot=false">Add</MudButton>
+      <MudButton StartIcon="@Icons.Material.Filled.Add" Href="@($"/twitch/accounts/add?isChatBot={isChatBot}")">Add</MudButton>
     </MudContainer>
-  </MudContainer>
-}
+  }
+</MudContainer>
 
 @code
 {
-  string? ActiveStreamer = Data.Twitch.Streamer.ActiveAccountName;
+  Dictionary<bool, string?> Active = new() {
+    {false, Data.Twitch.Streamer.ActiveAccountName},
+    {true, Data.Twitch.ChatBot.ActiveAccountName}
+  };
 
   async Task RemoveAccount(string key, bool chatbot)
   {
