@@ -1,0 +1,54 @@
+@page "/twitch/accounts/add/{type}"
+@using Nixill.Streaming.JoltBot.Twitch
+@inject NavigationManager NavMan
+
+@Text
+
+@code
+{
+  string Text = "Loading...";
+
+  [Parameter]
+  public string? Type { get; set; }
+
+  public bool IsChatBot => Type == "chatbot";
+
+  [SupplyParameterFromQuery]
+  public string State { get; set; } = "";
+
+  [SupplyParameterFromQuery]
+  public string? Code { get; set; }
+
+  [SupplyParameterFromQuery]
+  public string? Scope { get; set; }
+
+  [SupplyParameterFromQuery]
+  public string? Error { get; set; }
+
+  [SupplyParameterFromQuery(Name = "error_description")]
+  public string? ErrorDescription { get; set; }
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (!firstRender) return;
+
+    if (!JoltTwitchAccountClient.Get(IsChatBot).IsCorrectChangeState(State!))
+    {
+      Text = "Incorrect state.";
+      StateHasChanged();
+      return;
+    }
+    
+    if (Error != null)
+    {
+      Text = ErrorDescription!;
+      StateHasChanged();
+      return;
+    }
+
+    await JoltTwitchAccountClient.Get(IsChatBot).UseAuthCode(Code!, Scope!, NavMan.Uri[0..NavMan.Uri.IndexOf('?')]);
+    Text = "Success! (You can close this page now.)";
+    NavMan.NavigateTo("/twitch/accounts");
+    return;
+  }
+}

@@ -1,0 +1,32 @@
+@page "/twitch/accounts/add"
+@using Nixill.Streaming.JoltBot.BotData
+@using Nixill.Streaming.JoltBot.Twitch
+@inject NavigationManager NavMan
+
+Redirecting...
+
+@code
+{
+  [SupplyParameterFromQuery(Name = "isChatBot")]
+  public bool IsChatBot { get; set; }
+
+  protected override void OnParametersSet()
+  {
+    Uri currentUri = NavMan.ToAbsoluteUri(NavMan.Uri);
+
+    var jtam = JoltTwitchAccountClient.Get(IsChatBot);
+
+    UriBuilder builder = new() {
+      Host = "id.twitch.tv",
+      Path = "/oauth2/authorize",
+      Query = "response_type=code"
+        + $"&client_id={Data.Twitch.ClientID}"
+        + $"&redirect_uri=http://{currentUri.Host}{(currentUri.IsDefaultPort ? "" : $":{currentUri.Port}")}/twitch/accounts/add/{(IsChatBot ? "chatbot" : "streamer")}"
+        + $"&scopes={jtam.AuthScopeString}"
+        + $"&state={jtam.GetChangeState()}"
+        + $"&force_verify=true"
+    };
+
+    NavMan.NavigateTo(builder.ToString());
+  }
+}

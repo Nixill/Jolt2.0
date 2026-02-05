@@ -1,0 +1,91 @@
+The following files from Jolt 1.0 have been implemented in Jolt 2.0 or related libraries:
+
+- [ ] data
+  - [ ] UFO50
+    - [ ] BackgroundsCsv.cs
+    - [ ] BingosyncCsv.cs
+    - [ ] MusicJson.cs
+  - [ ] CommandsCsv.cs
+  - [ ] DiscordJson.cs
+  - [ ] GamesCsv.cs
+  - [ ] MemoryJson.cs
+  - [ ] OBSJson.cs
+  - [ ] PretzelJson.cs
+  - [ ] RewardsJson.cs
+  - [ ] SuperHexagonCSVs.cs
+  - [ ] SuperHexagonJson.cs
+  - [ ] TwitchJson.cs
+  - [ ] UpcomingJson.cs
+- [ ] discord
+  - [ ] WebhookClient.cs
+- [ ] files
+  - [ ] PretzelFileWatcher.cs
+- [ ] game-specific
+  - [ ] SuperHexagonBreak
+    - [ ] Controller.cs
+    - [ ] Interactions.cs
+    - [ ] Support.cs
+  - [ ] UFO50Bingo
+    - [ ] BingoBackgroundChanger.cs
+    - [ ] BingoDraftController.cs
+    - [ ] BingoInfoUpdater.cs
+    - [ ] BingoMusicController.cs
+    - [ ] BingoReset.cs
+    - [ ] BingoScorecard.cs
+    - [ ] BingoSetup.cs
+    - [ ] UFO50Games.cs
+- [ ] obs
+  - [ ] AdManager.cs
+  - [ ] EndScreenManager.cs
+  - [ ] GameScreen.cs
+  - [ ] OBSClient.cs
+  - [ ] OBSEventHandlers.cs
+  - [ ] OBSUtils.cs
+  - [ ] SceneSwitcher.cs
+  - [ ] StreamStopper.cs
+  - [ ] WebcamImages.cs
+- [ ] pipes
+  - [ ] MarkerButton.cs
+  - [ ] PipeRunner.cs
+  - [ ] PipeServer.cs
+  - [ ] ScreenshotButton.cs
+- [ ] scheduled
+  - [ ] AudioMonitoring.cs
+  - [ ] ScheduledActions.cs
+  - [ ] StreamClock.cs
+- [ ] twitch
+  - [ ] api-client
+    - [ ] JoltApiClient.cs
+    - [ ] JoltCache.cs
+    - [ ] JoltHelperMethods.cs
+  - [ ] common
+    - [ ] ExecutionContext.cs
+    - [ ] LimitAttributes.cs
+  - [ ] event-client
+    - [ ] rewards
+      - [ ] PokemonRewards.cs
+    - [ ] EventCondition.cs
+    - [ ] JoltEventClient.cs
+    - [ ] JoltEventService.cs
+    - [ ] JoltRewardDispatch.cs
+    - [ ] JoltRewardResponse.cs
+    - [ ] RewardAttributes.cs
+    - [ ] RewardExceptions.cs
+  - [ ] irc-client
+    - [ ] commands
+      - [ ] ApiCommands.cs
+      - [ ] InfoCommands.cs
+      - [ ] MetaCommands.cs
+      - [ ] ModCommands.cs
+      - [ ] ObsCommands.cs
+      - [ ] SillyCommands.cs
+      - [ ] TestCommands.cs
+    - [ ] CommandAttributes.cs
+    - [ ] CommandDispatch.cs
+    - [ ] CommandExceptions.cs
+    - [ ] Deserializers.cs
+    - [ ] JoltChatBot.cs
+  - [ ] JoltTwitchMain.cs
+- [ ] JoltMain.cs
+- [x] Logger.cs
+- [x] ~~OrderAttribute.cs~~ *(unused)*

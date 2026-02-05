@@ -1,0 +1,53 @@
+@page "/twitch/accounts"
+@using Nixill.Streaming.JoltBot.BotData
+@using Nixill.Streaming.JoltBot.Twitch
+
+<PageTitle>Twitch Account Manager</PageTitle>
+
+<MudText>This page lists the Twitch accounts to which the bot is connected. You may connect a new account or update a connection using the link at the bott om of the page.</MudText>
+
+@{
+  var streamerAccounts = Data.Twitch.Streamer.Accounts;
+
+  <MudContainer Class="d-flex">
+    <MudContainer Class="d-block">
+      <MudText Class="" Typo="Typo.h2">Streamer accounts:</MudText>
+      @if (streamerAccounts.Any())
+      {
+        <MudList T="string" @bind-SelectedValue="ActiveStreamer" @bind-SelectedValue:after="() => JoltTwitchAccountClient.Streamer.SetActiveAccount(ActiveStreamer)">
+          @foreach (var acct in streamerAccounts)
+          {
+            bool usable = JoltTwitchAccountClient.Streamer.HasAllAuthScopes(acct.Scopes);
+            <MudListItem Value="@acct.Name" Disabled="@(!usable)">
+              <MudAvatar>
+                <MudImage Src="@acct.AvatarURL"/>
+              </MudAvatar>
+              @acct.Name
+              @if (!usable)
+              {
+                <MudIcon Icon="@Icons.Material.Filled.Error" Color="@Color.Error" />
+                @:Missing scopes, must be reauthorized (use add button below).
+              }
+              <MudIconButton OnClick="() => RemoveAccount(acct.Name, false)" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" />
+            </MudListItem>
+          }
+        </MudList>
+      } else {
+        <MudText>There are no connected streamer accounts! Use the button below to add one.</MudText>
+      }
+
+      <MudButton StartIcon="@Icons.Material.Filled.Add" Href="/twitch/accounts/add?isChatBot=false">Add</MudButton>
+    </MudContainer>
+  </MudContainer>
+}
+
+@code
+{
+  string? ActiveStreamer = Data.Twitch.Streamer.ActiveAccountName;
+
+  async Task RemoveAccount(string key, bool chatbot)
+  {
+    await JoltTwitchAccountClient.Get(chatbot).RemoveAccount(key);
+    StateHasChanged();
+  }
+}

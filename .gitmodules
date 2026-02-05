@@ -4,3 +4,6 @@
 [submodule "CSharp.Nixill.OBSWS"]
 	path = CSharp.Nixill.OBSWS
 	url = ../CSharp.Nixill.OBSWS/
+[submodule "CSharp.Nixill.JSON"]
+	path = CSharp.Nixill.JSON
+	url = ../CSharp.Nixill.JSON/
