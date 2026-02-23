@@ -14,7 +14,7 @@ Redirecting...
   {
     Uri currentUri = NavMan.ToAbsoluteUri(NavMan.Uri);
 
-    var jtam = JoltTwitchAccountClient.Get(IsChatBot);
+    var jtam = JoltTwitchClient.Get(IsChatBot);
 
     UriBuilder builder = new() {
       Host = "id.twitch.tv",

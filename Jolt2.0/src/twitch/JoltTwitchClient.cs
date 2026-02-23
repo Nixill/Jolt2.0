@@ -1,27 +1,27 @@
 using System.Reflection;
 using Nixill.Streaming.JoltBot.BotData;
 using Nixill.Utils.Extensions;
+using NodaTime;
 using TwitchLib.Api;
+using TwitchLib.EventSub.Websockets;
 
 namespace Nixill.Streaming.JoltBot.Twitch;
 
-public class JoltTwitchAccountClient
+/// <summary>
+///   Clients for Twitch's EventSub and API for this app.
+/// </summary>
+public partial class JoltTwitchClient
 {
   /// <summary>
-  ///   Get whether this JTAC represents a chat bot or not.
+  ///   True iff chat bot, false if streamer scoped JTC.
   /// </summary>
   public readonly bool IsChatBot;
 
   /// <summary>
-  ///   The actual Twitch API Client used by this JTAC.
-  /// </summary>
-  internal TwitchAPI APIClient;
-
-  /// <summary>
-  ///   Create one of the JTACs.
+  ///   Create one of the JTCs.
   /// </summary>
   /// <param name="isChatBot">Chat bot or streamer?</param>
-  private JoltTwitchAccountClient(bool isChatBot)
+  private JoltTwitchClient(bool isChatBot)
   {
     IsChatBot = isChatBot;
     APIClient = new TwitchAPI(Log.Factory)
@@ -31,42 +31,75 @@ public class JoltTwitchAccountClient
         ClientId = Data.Twitch.ClientID
       }
     };
+    EventSubClient = new EventSubWebsocketClient(Log.Factory);
   }
 
   /// <summary>
-  ///   The JTAC for the streamer account.
+  ///   The JTC for the streamer account.
   /// </summary>
-  public static readonly JoltTwitchAccountClient Streamer = new(false);
+  public static readonly JoltTwitchClient Streamer = new(false);
 
   /// <summary>
-  ///   The JTAC for the chat bot account.
+  ///   The JTC for the chat bot account.
   /// </summary>
-  public static readonly JoltTwitchAccountClient ChatBot = new(true);
+  public static readonly JoltTwitchClient ChatBot = new(true);
 
   /// <summary>
-  ///   Get the JTAC with a boolean "is chat bot" value.
+  ///   Get the JTC with a boolean "is chat bot" value.
   /// </summary>
   /// <param name="chatbot">Chat bot true, streamer false</param>
-  /// <returns>The JTAC.</returns>
-  public static JoltTwitchAccountClient Get(bool chatbot) => chatbot ? JoltTwitchAccountClient.ChatBot
-    : JoltTwitchAccountClient.Streamer;
+  /// <returns>The JTC.</returns>
+  public static JoltTwitchClient Get(bool chatbot) => chatbot ? ChatBot : Streamer;
 
   /// <summary>
-  ///   Get the active account name for this JTAC.
+  ///   Gets both of the JTCs.
   /// </summary>
-  /// <returns>The account name, null if not signed in.</returns>
-  public string? GetActiveAccountName() => Data.Twitch.StreamerOrChatBot(IsChatBot).ActiveAccountName;
+  /// <returns>The streamer JTC, then the chat bot JTC.</returns>
+  public static IEnumerable<JoltTwitchClient> Both
+    => [Streamer, ChatBot];
 
   /// <summary>
-  ///   Change which account is signed in to this JTAC.
+  ///   Get the active account user ID for this JTC.
+  /// </summary>
+  /// <returns>The account user ID, null if not signed in.</returns>
+  public string? GetActiveAccountUID() => Data.Twitch.StreamerOrChatBot(IsChatBot).ActiveAccountUID;
+
+  /// <summary>
+  ///   Get the active account for this JTC.
+  /// </summary>
+  /// <returns>The account, null if not signed in.</returns>
+  public JoltTwitchAccount? GetActiveAccount() => Data.Twitch.StreamerOrChatBot(IsChatBot).ActiveAccount;
+
+  /// <summary>
+  ///   Change which account is signed in to this JTC.
   /// </summary>
   /// <param name="value">The new account name. Case sensitive.</param>
   /// <returns>(Task, void.)</returns>
-  public async Task SetActiveAccount(string? value)
+  public async Task SetActiveAccountByUID(string? uid)
   {
-    Data.Twitch.StreamerOrChatBot(IsChatBot).ActiveAccountName = value;
+    // Close existing websockets first
+    Data.Twitch.StreamerOrChatBot(IsChatBot).ActiveAccountUID = uid;
     Data.Twitch.Save();
     APIClient.Settings.AccessToken = Data.Twitch.StreamerOrChatBot(IsChatBot).ActiveAccount?.Token;
+  }
+
+  /// <summary>
+  ///   Gets whether or not this JTC has an active account.
+  /// </summary>
+  /// <returns></returns>
+  public bool HasActiveAccount() => Data.Twitch.StreamerOrChatBot(IsChatBot).ActiveAccountUID != null;
+
+  /// <summary>
+  ///   Refreshes the current account, if any is active.
+  /// </summary>
+  public void RefreshCurrentAccount()
+  {
+    var accountNull = Data.Twitch.StreamerOrChatBot(IsChatBot).ActiveAccount;
+
+    if (accountNull.HasValue)
+    {
+      APIClient.Settings.AccessToken = accountNull.Value.Token;
+    }
   }
 
   /// <summary>
@@ -74,18 +107,18 @@ public class JoltTwitchAccountClient
   /// </summary>
   /// <param name="value">The account name to remove. Case sensitive.</param>
   /// <returns>(Task, void.)</returns>
-  public async Task RemoveAccount(string? value)
+  public async Task RemoveAccountByUID(string? value)
   {
     var jtal = Data.Twitch.StreamerOrChatBot(IsChatBot);
     jtal.Accounts.RemoveAll(a => a.Name == value);
-    if (jtal.ActiveAccountName == value) await SetActiveAccount(jtal.Accounts.FirstOrNull()?.Name);
+    if (jtal.ActiveAccountUID == value) await SetActiveAccountByUID(jtal.Accounts.FirstOrNull()?.UID);
   }
 
   /// <summary>
   ///   The auth scopes needed by a twitch account of this type.
   /// </summary>
   string[] AuthScopes => [..
-    typeof(JoltTwitchAccountClient).Assembly
+    typeof(JoltTwitchClient).Assembly
       .GetTypes()
       .SelectMany(t => t.GetMethods())
       .SelectMany(m => m.GetCustomAttributes<UsesAuthScopeAttribute>())
@@ -104,7 +137,7 @@ public class JoltTwitchAccountClient
   /// </summary>
   /// <param name="scopes">The list of scopes.</param>
   /// <returns>true if passes, false if fails.</returns>
-  public bool HasAllAuthScopes(string[] scopes) => !AuthScopes.Except(scopes).Any();
+  public bool HasAllAuthScopes(string[] scopes) => !AuthScopes.Except(scopes ?? []).Any();
 
   /// <summary>
   ///   The "state" parameter of a new-account request.
@@ -150,13 +183,14 @@ public class JoltTwitchAccountClient
       Refresh: authResponse.RefreshToken,
       UID: tokenResponse.UserId,
       Scopes: authResponse.Scopes ?? [],
-      AvatarURL: infoResponse.ProfileImageUrl
+      AvatarURL: infoResponse.ProfileImageUrl,
+      LastRefresh: SystemClock.Instance.GetCurrentInstant()
     );
 
-    Data.Twitch.StreamerOrChatBot(IsChatBot).Accounts.RemoveAll(a => a.Name == acct.Name);
+    Data.Twitch.StreamerOrChatBot(IsChatBot).Accounts.RemoveAll(a => a.UID == acct.UID);
     Data.Twitch.StreamerOrChatBot(IsChatBot).Accounts.Add(acct);
 
-    await SetActiveAccount(acct.Name);
+    await SetActiveAccountByUID(acct.UID);
   }
 }
 

@@ -1,0 +1,4 @@
+[*.cs]
+
+# IDE0130: File path matching
+dotnet_diagnostic.IDE0130.severity = none

@@ -9,17 +9,17 @@
 <MudContainer Class="d-flex">
   @foreach (bool isChatBot in (bool[])[false, true]){
     var accounts = Data.Twitch.StreamerOrChatBot(isChatBot).Accounts;
-    var jtac = JoltTwitchAccountClient.Get(isChatBot);
+    var jtc = JoltTwitchClient.Get(isChatBot);
     <MudContainer Class="d-block">
       <MudText Class="" Typo="Typo.h2">@(isChatBot ? "Chat bot" : "Streamer") accounts:</MudText>
       @if (accounts.Any())
       {
         <MudList T="string" @bind-SelectedValue="Active[isChatBot]"
-          @bind-SelectedValue:after="() => jtac.SetActiveAccount(Active[isChatBot])">
+          @bind-SelectedValue:after="() => jtc.SetActiveAccountByUID(Active[isChatBot])">
           @foreach (var acct in accounts)
           {
-            bool usable = jtac.HasAllAuthScopes(acct.Scopes);
-            <MudListItem Value="@acct.Name" Disabled="@(!usable)">
+            bool usable = jtc.HasAllAuthScopes(acct.Scopes);
+            <MudListItem Value="@acct.UID" Disabled="@(!usable)">
               <MudAvatar Style="vertical-align: middle;">
                 <MudImage Src="@acct.AvatarURL"/>
               </MudAvatar>
@@ -29,7 +29,7 @@
                 <MudIcon Icon="@Icons.Material.Filled.Error" Color="@Color.Error" />
                 @:Missing scopes, must be reauthorized (use add button below).
               }
-              <MudIconButton Style="vertical-align: middle;" Class="d-inline" OnClick="() => RemoveAccount(acct.Name, isChatBot)"
+              <MudIconButton Style="vertical-align: middle;" Class="d-inline" OnClick="() => RemoveAccountByUID(acct.UID, isChatBot)"
                 Icon="@Icons.Material.Filled.Delete" Color="Color.Error" />
             </MudListItem>
           }
@@ -46,13 +46,13 @@
 @code
 {
   Dictionary<bool, string?> Active = new() {
-    {false, Data.Twitch.Streamer.ActiveAccountName},
-    {true, Data.Twitch.ChatBot.ActiveAccountName}
+    {false, Data.Twitch.Streamer.ActiveAccountUID},
+    {true, Data.Twitch.ChatBot.ActiveAccountUID}
   };
 
-  async Task RemoveAccount(string key, bool chatbot)
+  async Task RemoveAccountByUID(string uid, bool chatbot)
   {
-    await JoltTwitchAccountClient.Get(chatbot).RemoveAccount(key);
+    await JoltTwitchClient.Get(chatbot).RemoveAccountByUID(uid);
     StateHasChanged();
   }
 }

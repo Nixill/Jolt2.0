@@ -32,7 +32,7 @@
   {
     if (!firstRender) return;
 
-    if (!JoltTwitchAccountClient.Get(IsChatBot).IsCorrectChangeState(State!))
+    if (!JoltTwitchClient.Get(IsChatBot).IsCorrectChangeState(State!))
     {
       Text = "Incorrect state.";
       StateHasChanged();
@@ -46,7 +46,7 @@
       return;
     }
 
-    await JoltTwitchAccountClient.Get(IsChatBot).UseAuthCode(Code!, NavMan.Uri[0..NavMan.Uri.IndexOf('?')]);
+    await JoltTwitchClient.Get(IsChatBot).UseAuthCode(Code!, NavMan.Uri[0..NavMan.Uri.IndexOf('?')]);
     Text = "Success! (You can close this page now.)";
     NavMan.NavigateTo("/twitch/accounts");
     return;

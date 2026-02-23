@@ -1,8 +1,13 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 
 namespace Nixill.Streaming.JoltBot.BotData;
 
+/// <summary>
+///   Static class for accessing data files.
+/// </summary>
 public static class Data
 {
   /// <summary>
@@ -14,10 +19,15 @@ public static class Data
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     AllowTrailingCommas = true,
     WriteIndented = true
-  };
+  }.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
+
+  /// <summary>
+  ///   The data in the "settings.json" file.
+  /// </summary>
+  public static readonly SettingsData Settings = SettingsData.Instance;
 
   /// <summary>
   ///   The data in the "twitch.json" file.
   /// </summary>
-  public static TwitchData Twitch = TwitchData.Instance;
+  public static readonly TwitchData Twitch = TwitchData.Instance;
 }

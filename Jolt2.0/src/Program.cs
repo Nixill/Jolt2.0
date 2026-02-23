@@ -1,6 +1,8 @@
 using MudBlazor.Services;
 using Jolt2._0.Components;
 using TwitchLib.EventSub.Websockets.Extensions;
+using Nixill.Streaming.JoltBot.Scheduled;
+using Nixill.Streaming.JoltBot.Twitch.EventSub;
 
 namespace Nixill.Streaming.JoltBot;
 
@@ -20,14 +22,16 @@ public static class JoltMain
 
     var builder = WebApplication.CreateBuilder(args);
 
-    // Add MudBlazor services
-    builder.Services.AddMudServices();
-
     // Add services to the container.
     builder.Services.AddRazorComponents()
         .AddInteractiveServerComponents();
 
-    builder.Services.AddTwitchLibEventSubWebsockets();
+    // Add MudBlazor services
+    builder.Services.AddMudServices();
+
+    // Add other services
+    builder.Services.AddTwitchLibEventSubWebsockets()
+      .AddHostedService<JoltEventService>();
 
     var app = builder.Build();
 
@@ -47,6 +51,9 @@ public static class JoltMain
     app.MapStaticAssets();
     app.MapRazorComponents<App>()
         .AddInteractiveServerRenderMode();
+
+    // Other setup stuff time
+    ScheduledActions.RunAll();
 
     app.Run();
   }

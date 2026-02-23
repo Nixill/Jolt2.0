@@ -1,0 +1,58 @@
+@page "/twitch"
+@using Nixill.Streaming.JoltBot.BotData
+@using Nixill.Streaming.JoltBot.NodaTime
+@using Nixill.Streaming.JoltBot.Twitch
+
+<PageTitle>Twitch Connection Dashboard</PageTitle>
+
+<MudText>This page lists the status of Jolt's connection to Twitch servers.</MudText>
+
+<MudTable Items="@JoltTwitchClient.Both">
+  <HeaderContent>
+    <MudTh>&nbsp;</MudTh>
+    <MudTh>Account</MudTh>
+    <MudTh>API Connected</MudTh>
+    <MudTh>EventSub Connected</MudTh>
+    <MudTh>Token Last Refreshed</MudTh>
+  </HeaderContent>
+  <RowTemplate>
+    <MudTd>@(context.IsChatBot ? "Chat bot" : "Streamer")</MudTd>
+    @{
+      var accountNull = context.GetActiveAccount();
+      if (accountNull.HasValue)
+      {
+        var account = accountNull.Value;
+        <MudTd DataLabel="Account">
+          <MudAvatar Style="vertical-align: middle;">
+            <MudImage Src="@account.AvatarURL"/>
+          </MudAvatar>
+          @account.Name
+        </MudTd>
+        <MudTd DataLabel="API Connected">
+          <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success"/>
+        </MudTd>
+        <MudTd DataLabel="EventSub Connected">
+          (n/a)
+        </MudTd>
+        <MudTd DataLabel="Token Last Refreshed">
+          @TimeFormats.GetTime(account.LastRefresh)
+        </MudTd>
+      }
+      else
+      {
+        <MudTd DataLabel="Account">
+          None connected!
+        </MudTd>
+        <MudTd DataLabel="API Connected">
+          (n/a)
+        </MudTd>
+        <MudTd DataLabel="EventSub Connected">
+          (n/a)
+        </MudTd>
+        <MudTd DataLabel="Token Last Refreshed">
+          (n/a)
+        </MudTd>
+      }
+    }
+  </RowTemplate>
+</MudTable>

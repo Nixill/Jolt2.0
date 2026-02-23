@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using NodaTime;
 
 namespace Nixill.Streaming.JoltBot.BotData;
 
@@ -47,6 +48,11 @@ public class TwitchData
   /// <param name="chatbot">true for chatbot, false for streamer.</param>
   /// <returns>The appropriate account list.</returns>
   public JoltTwitchAccountList StreamerOrChatBot(bool chatbot) => chatbot ? ChatBot : Streamer;
+
+  /// <summary>
+  ///   Gets both the streamer, then the chat bot, <see cref="JoltTwitchAccountList"/>.
+  /// </summary>
+  public IEnumerable<JoltTwitchAccountList> StreamerAndChatBot() => [Streamer, ChatBot];
 }
 
 /// <summary>
@@ -58,14 +64,14 @@ public record class JoltTwitchAccountList
   ///   Username of which account is active and signed in, null for none.
   /// </summary>
   [JsonPropertyName("active")]
-  public string? ActiveAccountName { get; set; }
+  public string? ActiveAccountUID { get; set; }
 
   /// <summary>
   ///   Which account is active and signed in, null for none.
   /// </summary>
   [JsonIgnore]
   public JoltTwitchAccount? ActiveAccount =>
-    (ActiveAccountName != null) ? Accounts.FirstOrDefault(a => a.Name == ActiveAccountName)
+    (ActiveAccountUID != null) ? Accounts.FirstOrDefault(a => a.UID == ActiveAccountUID)
       : null;
 
   /// <summary>
@@ -85,5 +91,8 @@ public record class JoltTwitchAccountList
 ///   The scopes with which the account is authorized.
 /// </param>
 /// <param name="AvatarURL">The account's avatar url.</param>
+/// <param name="LastRefresh">
+///   The time the token was last refreshed.
+/// </param>
 public readonly record struct JoltTwitchAccount(string Name, string Token, string Refresh, string UID, string[] Scopes,
-  string AvatarURL);
+  string AvatarURL, Instant LastRefresh);
