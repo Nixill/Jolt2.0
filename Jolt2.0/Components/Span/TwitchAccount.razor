@@ -1,0 +1,41 @@
+@using Nixill.Streaming.JoltBot.BotData
+
+@if (Account is JoltTwitchAccountInfo account)
+{
+  if (WithLink)
+  {
+    <MudLink Href="@($"https://twitch.tv/{account.LoginName}/")">
+      <TwitchAccount Account="@account" BoldText="@BoldText"/>
+    </MudLink>
+  }
+  else
+  {
+    <MudAvatar Style="vertical-align: middle;">
+      <MudImage Src="@account.AvatarURL"/>
+    </MudAvatar>
+    @:&nbsp;
+    if (BoldText)
+    {
+      <strong>@account.DisplayName</strong>
+    }
+    else
+    {
+      @account.DisplayName
+    }
+  }
+}
+else
+{
+  <em>(none)</em>
+}
+
+@code {
+  [Parameter]
+  public JoltTwitchAccountInfo? Account { get; set; } = default;
+
+  [Parameter]
+  public bool BoldText { get; set; } = false;
+
+  [Parameter]
+  public bool WithLink { get; set; } = false;
+}

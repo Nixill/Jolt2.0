@@ -4,6 +4,6 @@ public static class ScheduledActions
 {
   public static void RunAll()
   {
-    Task.Run(TokenRefresher.RefreshHourlyAsync);
+    Task.Run(TokenChecker.CheckHourlyAsync);
   }
 }

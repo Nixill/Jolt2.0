@@ -44,12 +44,9 @@ public partial class JoltEventService : IHostedService
   {
     Connected = true;
 
-    var nActiveStreamerAccount = Data.Twitch.Streamer.ActiveAccount;
-    var nActiveChatBotAccount = Data.Twitch.ChatBot.ActiveAccount;
-
     // If neither account is connected, disconnect the websocket so that
     // twitch doesn't have to make us.
-    if (nActiveChatBotAccount is null && nActiveStreamerAccount is null)
+    if (!JoltTwitchAccountManager.HasActiveAccount)
     {
       await Client.DisconnectAsync();
       return;
@@ -57,14 +54,6 @@ public partial class JoltEventService : IHostedService
 
     // Get all the eventsub flags
 
-
-    if (nActiveStreamerAccount is JoltTwitchAccount streamer)
-    {
-
-    }
-
-    if (nActiveChatBotAccount is JoltTwitchAccount chatBot)
-    { }
   }
 
   private async Task WebsocketDisconnected(object sender, EventArgs args)

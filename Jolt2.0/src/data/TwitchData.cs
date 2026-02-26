@@ -32,67 +32,35 @@ public class TwitchData
   public required string Secret { get; set; }
 
   /// <summary>
-  ///   The "streamer" account list.
+  ///   Which pair of accounts is currently active.
   /// </summary>
-  public required JoltTwitchAccountList Streamer { get; set; }
+  public string? ActivePairUID { get; set; } = null;
 
   /// <summary>
-  ///   The "chatBot" account list.
+  ///   Dictionary of accounts. Key is the streamer's uid.
   /// </summary>
-  public required JoltTwitchAccountList ChatBot { get; set; }
-
-  /// <summary>
-  ///   Gets either the streamer or chatbot account list based on a
-  ///   boolean value.
-  /// </summary>
-  /// <param name="chatbot">true for chatbot, false for streamer.</param>
-  /// <returns>The appropriate account list.</returns>
-  public JoltTwitchAccountList StreamerOrChatBot(bool chatbot) => chatbot ? ChatBot : Streamer;
-
-  /// <summary>
-  ///   Gets both the streamer, then the chat bot, <see cref="JoltTwitchAccountList"/>.
-  /// </summary>
-  public IEnumerable<JoltTwitchAccountList> StreamerAndChatBot() => [Streamer, ChatBot];
+  public required Dictionary<string, JoltTwitchAccountPair> Accounts { get; set; }
 }
 
 /// <summary>
-///   A listing of accounts in the twitch JSON.
+///   A pair of twitch accounts (one streamer, one chat bot).
 /// </summary>
-public record class JoltTwitchAccountList
-{
-  /// <summary>
-  ///   Username of which account is active and signed in, null for none.
-  /// </summary>
-  [JsonPropertyName("active")]
-  public string? ActiveAccountUID { get; set; }
-
-  /// <summary>
-  ///   Which account is active and signed in, null for none.
-  /// </summary>
-  [JsonIgnore]
-  public JoltTwitchAccount? ActiveAccount =>
-    (ActiveAccountUID != null) ? Accounts.FirstOrDefault(a => a.UID == ActiveAccountUID)
-      : null;
-
-  /// <summary>
-  ///   The list of all accounts connected.
-  /// </summary>
-  public List<JoltTwitchAccount> Accounts { get; set; } = [];
-}
+/// <param name="LastRefresh">
+///   The time the token was last refreshed.
+/// </param>
+public readonly record struct JoltTwitchAccountPair(JoltTwitchAccountInfo Streamer,
+  JoltTwitchAccountInfo ChatBot, Instant LastRefresh);
 
 /// <summary>
 ///   A single twitch account.
 /// </summary>
-/// <param name="Name">The account's sign-in name.</param>
-/// <param name="Token">The account's access token.</param>
-/// <param name="Refresh">The account's refresh token.</param>
 /// <param name="UID">The account's user ID.</param>
+/// <param name="DisplayName">The account's display name.</param>
+/// <param name="LoginName">The account's login username.</param>
+/// <param name="UserToken">The account's user access token.</param>
 /// <param name="Scopes">
 ///   The scopes with which the account is authorized.
 /// </param>
-/// <param name="AvatarURL">The account's avatar url.</param>
-/// <param name="LastRefresh">
-///   The time the token was last refreshed.
-/// </param>
-public readonly record struct JoltTwitchAccount(string Name, string Token, string Refresh, string UID, string[] Scopes,
-  string AvatarURL, Instant LastRefresh);
+/// <param name="AvatarURL">The account's avatar URL.</param>
+public readonly record struct JoltTwitchAccountInfo(string UID, string DisplayName, string LoginName,
+  string UserToken, string[]? Scopes, string AvatarURL);

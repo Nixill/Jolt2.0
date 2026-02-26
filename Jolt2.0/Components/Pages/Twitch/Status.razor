@@ -1,4 +1,5 @@
 @page "/twitch"
+@using Jolt2._0.Components.Span
 @using Nixill.Streaming.JoltBot.BotData
 @using Nixill.Streaming.JoltBot.NodaTime
 @using Nixill.Streaming.JoltBot.Twitch
@@ -7,52 +8,19 @@
 
 <MudText>This page lists the status of Jolt's connection to Twitch servers.</MudText>
 
-<MudTable Items="@JoltTwitchClient.Both">
-  <HeaderContent>
-    <MudTh>&nbsp;</MudTh>
-    <MudTh>Account</MudTh>
-    <MudTh>API Connected</MudTh>
-    <MudTh>EventSub Connected</MudTh>
-    <MudTh>Token Last Refreshed</MudTh>
-  </HeaderContent>
-  <RowTemplate>
-    <MudTd>@(context.IsChatBot ? "Chat bot" : "Streamer")</MudTd>
-    @{
-      var accountNull = context.GetActiveAccount();
-      if (accountNull.HasValue)
-      {
-        var account = accountNull.Value;
-        <MudTd DataLabel="Account">
-          <MudAvatar Style="vertical-align: middle;">
-            <MudImage Src="@account.AvatarURL"/>
-          </MudAvatar>
-          @account.Name
-        </MudTd>
-        <MudTd DataLabel="API Connected">
-          <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success"/>
-        </MudTd>
-        <MudTd DataLabel="EventSub Connected">
-          (n/a)
-        </MudTd>
-        <MudTd DataLabel="Token Last Refreshed">
-          @TimeFormats.GetTime(account.LastRefresh)
-        </MudTd>
-      }
-      else
-      {
-        <MudTd DataLabel="Account">
-          None connected!
-        </MudTd>
-        <MudTd DataLabel="API Connected">
-          (n/a)
-        </MudTd>
-        <MudTd DataLabel="EventSub Connected">
-          (n/a)
-        </MudTd>
-        <MudTd DataLabel="Token Last Refreshed">
-          (n/a)
-        </MudTd>
-      }
-    }
-  </RowTemplate>
-</MudTable>
+<MudText Typo="Typo.h2">Account:</MudText>
+
+@if (JoltTwitchAccountManager.ActiveAccounts is JoltTwitchAccountPair accounts)
+{
+  <MudText>
+    Jolt is connected to the streamer account <TwitchAccount Account="@accounts.Streamer" BoldText WithLink />
+    and the chat bot account  <TwitchAccount Account="@accounts.ChatBot" BoldText WithLink />.
+  </MudText>
+}
+else
+{
+  <MudText>
+    Jolt is not connected to any accounts. Go to the <MudLink Href="/twitch/accounts">Accounts page</MudLink>
+    to fix that.
+  </MudText>
+}
