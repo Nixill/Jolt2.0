@@ -58,9 +58,10 @@ public readonly record struct JoltTwitchAccountPair(JoltTwitchAccountInfo Stream
 /// <param name="DisplayName">The account's display name.</param>
 /// <param name="LoginName">The account's login username.</param>
 /// <param name="UserToken">The account's user access token.</param>
+/// <param name="RefreshToken">The account's refresh token.</param>
 /// <param name="Scopes">
 ///   The scopes with which the account is authorized.
 /// </param>
 /// <param name="AvatarURL">The account's avatar URL.</param>
 public readonly record struct JoltTwitchAccountInfo(string UID, string DisplayName, string LoginName,
-  string UserToken, string[]? Scopes, string AvatarURL);
+  string UserToken, string RefreshToken, string[]? Scopes, string AvatarURL);

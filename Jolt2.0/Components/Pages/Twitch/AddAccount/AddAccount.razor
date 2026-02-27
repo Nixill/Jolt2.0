@@ -16,14 +16,14 @@
 
   public bool IsChatBot => Type == "chatbot";
 
+  [SupplyParameterFromQuery]
   public string? Code { get; set; }
 
+  [SupplyParameterFromQuery]
   public string? Scope { get; set; }
 
-  public string? HashState { get; set; }
-
   [SupplyParameterFromQuery]
-  public string? State { get; set; } = "";
+  public string State { get; set; } = "";
 
   [SupplyParameterFromQuery]
   public string? Error { get; set; }
@@ -31,28 +31,11 @@
   [SupplyParameterFromQuery(Name = "error_description")]
   public string? ErrorDescription { get; set; }
 
-  protected override async Task OnParametersSetAsync()
-  {
-    var uri = NavMan.ToAbsoluteUri(NavMan.Uri);
-    var fragment = uri.Fragment;
-    if (fragment is not null && fragment != "" && fragment != "#")
-    {
-      var hashProps = fragment[1..].Split('&').Select(t => t.Split('=', 2)
-        .Select(f => HttpUtility.UrlDecode(f)).Double())
-        .Select(t => new KeyValuePair<string, string>(t.First, t.Second))
-        .ToDictionary();
-      
-      Code = hashProps.GetValueOrDefault("access_token");
-      Scope = hashProps.GetValueOrDefault("scope");
-      HashState = hashProps.GetValueOrDefault("state");
-    }
-  }
-
   protected override async Task OnAfterRenderAsync(bool firstRender)
   {
     if (!firstRender) return;
 
-    if (!JoltTwitchAccountManager.IsCorrectChangeState(HashState ?? State!))
+    if (!JoltTwitchAccountManager.IsCorrectChangeState(State))
     {
       Text = "Incorrect state.";
       StateHasChanged();
@@ -66,11 +49,11 @@
       return;
     }
 
-    await JoltTwitchAccountManager.AddAccount(Code!, IsChatBot);
+    await JoltTwitchAccountManager.AddAccount(Code!, NavMan.Uri[0..NavMan.Uri.IndexOf('?')], IsChatBot);
     Text = "Success!"; 
     if (!IsChatBot)
     {
-      NavMan.NavigateTo($"/twitch/accounts/add/chatbot-out?state={HashState}");
+      NavMan.NavigateTo($"/twitch/accounts/add/chatbot-out?state={State}");
     }
     else
     {

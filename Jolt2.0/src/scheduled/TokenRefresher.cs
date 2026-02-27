@@ -7,15 +7,16 @@ using TwitchLib.Api.Core.Exceptions;
 namespace Nixill.Streaming.JoltBot.Scheduled;
 
 /// <summary>
-///   A container for the task of validating tokens on an hourly basis.
+///   A container for the task of validating and refreshing tokens on an
+///   hourly basis.
 /// </summary>
-public static class TokenChecker
+public static class TokenRefresher
 {
   /// <summary>
-  ///   The task of validating tokens on an hourly basis.
+  ///   The task of refreshing tokens on an hourly basis.
   /// </summary>
   /// <returns>(Task, infinite loop.)</returns>
-  public static async Task CheckHourlyAsync()
+  public static async Task RefreshHourlyAsync()
   {
     var api = new TwitchAPI()
     {
@@ -33,28 +34,27 @@ public static class TokenChecker
       {
         try
         {
-          // Validate streamer token
-          var streamerRefresh = await api.Auth.ValidateAccessTokenAsync(pair.Streamer.UserToken)
+          // Refresh streamer token
+          var streamerRefresh = await api.Auth.RefreshAuthTokenAsync(pair.Streamer.RefreshToken, Data.Twitch.Secret)
             ?? throw new InvalidTokenException("streamer");
 
-          // Also validate chat bot token
-          var chatBotValidate = await api.Auth.ValidateAccessTokenAsync(pair.ChatBot.UserToken)
+          // Also refresh chat bot token
+          var chatBotRefresh = await api.Auth.RefreshAuthTokenAsync(pair.ChatBot.RefreshToken, Data.Twitch.Secret)
             ?? throw new InvalidTokenException("chat bot");
 
-          // And make sure both user info are up to date
-          var streamerInfo = (await api.Helix.Users
-              .GetUsersAsync(ids: [pair.Streamer.UID], accessToken: pair.Streamer.UserToken))
+          // And make sure both user infos are up to date
+          var streamerInfo = (await api.Helix.Users.GetUsersAsync(accessToken: streamerRefresh.AccessToken))
             .Users.First()!;
 
-          var chatBotInfo = (await api.Helix.Users
-              .GetUsersAsync(ids: [pair.ChatBot.UID], accessToken: pair.ChatBot.UserToken))
+          var chatBotInfo = (await api.Helix.Users.GetUsersAsync(accessToken: chatBotRefresh.AccessToken))
             .Users.First()!;
 
           var newStreamerAccount = new JoltTwitchAccountInfo(
             UID: streamerInfo.Id,
             DisplayName: streamerInfo.DisplayName,
             LoginName: streamerInfo.Login,
-            UserToken: pair.Streamer.UserToken,
+            UserToken: streamerRefresh.AccessToken,
+            RefreshToken: streamerRefresh.RefreshToken,
             Scopes: streamerRefresh.Scopes?.ToArray(),
             AvatarURL: streamerInfo.ProfileImageUrl
           );
@@ -63,8 +63,9 @@ public static class TokenChecker
             UID: chatBotInfo.Id,
             DisplayName: chatBotInfo.DisplayName,
             LoginName: chatBotInfo.Login,
-            UserToken: pair.ChatBot.UserToken,
-            Scopes: chatBotValidate.Scopes?.ToArray(),
+            UserToken: chatBotRefresh.AccessToken,
+            RefreshToken: chatBotRefresh.RefreshToken,
+            Scopes: chatBotRefresh.Scopes?.ToArray(),
             AvatarURL: chatBotInfo.ProfileImageUrl
           );
 

@@ -180,12 +180,20 @@ public static class JoltTwitchAccountManager
   private static JoltTwitchAccountInfo? PendingStreamerAccount = null;
 
   /// <summary>
-  ///   Adds a chat bot account to a waiting streamer account.
+  ///   Uses an auth code to add an account.
   /// </summary>
-  /// <param name="token">The chat bot's app access token.</param>
+  /// <param name="token">The account's authentication code.</param>
+  /// <param name="redirect">The redirect uri.</param>
+  /// <param name="isChatBot">
+  ///   Whether this is a streamer or chat bot account.
+  /// </param>
   /// <returns>(Task, void.)</returns>
-  public static async Task AddAccount(string token, bool isChatBot)
+  public static async Task AddAccount(string code, string redirect, bool isChatBot)
   {
+    var authResponse = await JoltTwitchAPI.Client.Auth.GetAccessTokenFromCodeAsync(code, Data.Twitch.Secret, redirect);
+
+    var token = authResponse.AccessToken;
+
     var tokenResponse = await JoltTwitchAPI.Client.Auth.ValidateAccessTokenAsync(token);
 
     var infoResponse = (await JoltTwitchAPI.Client.Helix.Users.GetUsersAsync(accessToken: token))
@@ -196,6 +204,7 @@ public static class JoltTwitchAccountManager
       DisplayName: infoResponse.DisplayName,
       LoginName: infoResponse.Login,
       UserToken: token,
+      RefreshToken: authResponse.RefreshToken,
       Scopes: tokenResponse.Scopes?.ToArray(),
       AvatarURL: infoResponse.ProfileImageUrl
     );

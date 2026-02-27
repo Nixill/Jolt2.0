@@ -1,3 +1,4 @@
+using System.Reflection;
 using Nixill.Streaming.JoltBot.BotData;
 using TwitchLib.EventSub.Websockets;
 using TwitchLib.EventSub.Websockets.Core.EventArgs;
@@ -52,7 +53,15 @@ public partial class JoltEventService : IHostedService
       return;
     }
 
-    // Get all the eventsub flags
+    // Let's establish our conduits now
+
+
+    // Get all the EventSub subscription types
+    IEnumerable<TwitchEventAttribute> subscriptions = typeof(JoltEventService).Assembly
+      .GetTypes()
+      .SelectMany(t => t.GetMethods())
+      .SelectMany(t => t.GetCustomAttributes<TwitchEventAttribute>());
+
 
   }
 

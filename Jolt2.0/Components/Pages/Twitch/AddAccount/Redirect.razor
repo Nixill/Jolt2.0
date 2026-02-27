@@ -23,7 +23,7 @@ Redirecting...
     UriBuilder builder = new() {
       Host = "id.twitch.tv",
       Path = "/oauth2/authorize",
-      Query = "response_type=token"
+      Query = "response_type=code"
         + $"&client_id={Data.Twitch.ClientID}"
         + $"&redirect_uri=http://{currentUri.Host}{(currentUri.IsDefaultPort ? "" : $":{currentUri.Port}")}/twitch/accounts/add/{Type}-in"
         + $"&scopes={HttpUtility.UrlEncode(JoltTwitchAccountManager.ChatBotAuthScopeString)}"
