@@ -218,6 +218,7 @@ public static class JoltTwitchAccountManager
       );
 
       Data.Twitch.Accounts[PendingStreamerAccount!.Value.UID] = newPair;
+      Data.Twitch.Save();
 
       PendingStreamerAccount = null;
     }
