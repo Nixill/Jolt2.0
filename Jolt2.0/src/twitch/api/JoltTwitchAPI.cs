@@ -64,6 +64,9 @@ public static class JoltTwitchAPI
   ///   will also automatically attempt to refresh the access token and
   ///   try again in case of expired token.
   /// </remarks>
+  /// <param name="comment">
+  ///   Comment so I know where the heck the call is coming from.
+  /// </param>
   /// <param name="call">The call to make.</param>
   /// <param name="callType">
   ///   Whether to make the call using the app access token, the
@@ -71,8 +74,8 @@ public static class JoltTwitchAPI
   ///   access token.
   /// </param>
   /// <returns>(Task, void.)</returns>
-  internal static Task Call(TwitchAPICallAsync call, JoltTwitchTokenType callType = JoltTwitchTokenType.Streamer)
-    => Call((api, _, _) => call(api), callType);
+  internal static Task Call(string comment, TwitchAPICallAsync call, JoltTwitchTokenType callType = JoltTwitchTokenType.Streamer)
+    => Call(comment, (api, _, _) => call(api), callType);
 
   /// <summary>
   ///   Makes an API call with this client's access token.
@@ -86,6 +89,9 @@ public static class JoltTwitchAPI
   ///   a chat bot ID, use the three-arg delegate overload and use the
   ///   third parameter.
   /// </remarks>
+  /// <param name="comment">
+  ///   Comment so I know where the heck the call is coming from.
+  /// </param>
   /// <param name="call">The call to make.</param>
   /// <param name="callType">
   ///   Whether to make the call using the app access token, the
@@ -93,8 +99,8 @@ public static class JoltTwitchAPI
   ///   access token.
   /// </param>
   /// <returns>(Task, void.)</returns>
-  internal static Task Call(TwitchAPICallWithUserIDAsync call, JoltTwitchTokenType callType = JoltTwitchTokenType.Streamer)
-    => Call((api, id, _) => call(api, id), callType);
+  internal static Task Call(string comment, TwitchAPICallWithUserIDAsync call, JoltTwitchTokenType callType = JoltTwitchTokenType.Streamer)
+    => Call(comment, (api, id, _) => call(api, id), callType);
 
   /// <summary>
   ///   Makes an API call with this client's access token and broadcaster ID.
@@ -104,6 +110,9 @@ public static class JoltTwitchAPI
   ///   will also automatically attempt to refresh the access token and
   ///   try again in case of expired token.
   /// </remarks>
+  /// <param name="comment">
+  ///   Comment so I know where the heck the call is coming from.
+  /// </param>
   /// <param name="call">The call to make.</param>
   /// <param name="callType">
   ///   Whether to make the call using the app access token, the
@@ -111,9 +120,9 @@ public static class JoltTwitchAPI
   ///   access token.
   /// </param>
   /// <returns>(Task, void.)</returns>
-  internal static Task Call(TwitchAPICallWithTwoUserIDsAsync call,
+  internal static Task Call(string comment, TwitchAPICallWithTwoUserIDsAsync call,
     JoltTwitchTokenType callType = JoltTwitchTokenType.Streamer)
-  => Call(async (api, sid, cbid) =>
+  => Call(comment, async (api, sid, cbid) =>
     {
       await call(api, sid, cbid);
       return true;
@@ -129,6 +138,9 @@ public static class JoltTwitchAPI
   ///   try again in case of expired token.
   /// </remarks>
   /// <typeparam name="T">The type of the result of the call.</typeparam>
+  /// <param name="comment">
+  ///   Comment so I know where the heck the call is coming from.
+  /// </param>
   /// <param name="call">The call to make.</param>
   /// <param name="callType">
   ///   Whether to make the call using the app access token, the
@@ -136,9 +148,9 @@ public static class JoltTwitchAPI
   ///   access token.
   /// </param>
   /// <returns>(Task) The result of the call.</returns>
-  internal static Task<T> Call<T>(TwitchAPICallWithReturnValueAsync<T> call,
+  internal static Task<T> Call<T>(string comment, TwitchAPICallWithReturnValueAsync<T> call,
     JoltTwitchTokenType callType = JoltTwitchTokenType.Streamer)
-    => Call((api, _, _) => call(api), callType);
+    => Call(comment, (api, _, _) => call(api), callType);
 
   /// <summary>
   ///   Makes an API call with this client's access token.
@@ -153,6 +165,9 @@ public static class JoltTwitchAPI
   ///   third parameter.
   /// </remarks>
   /// <typeparam name="T">The type of the result of the call.</typeparam>
+  /// <param name="comment">
+  ///   Comment so I know where the heck the call is coming from.
+  /// </param>
   /// <param name="call">The call to make.</param>
   /// <param name="callType">
   ///   Whether to make the call using the app access token, the
@@ -160,9 +175,9 @@ public static class JoltTwitchAPI
   ///   access token.
   /// </param>
   /// <returns>(Task) The result of the call.</returns>
-  internal static Task<T> Call<T>(TwitchAPICallWithUserIDAndReturnValueAsync<T> call,
+  internal static Task<T> Call<T>(string comment, TwitchAPICallWithUserIDAndReturnValueAsync<T> call,
     JoltTwitchTokenType callType = JoltTwitchTokenType.Streamer)
-    => Call((api, id, _) => call(api, id), callType);
+    => Call(comment, (api, id, _) => call(api, id), callType);
 
   /// <summary>
   ///   Makes an API call with this client's access token and broadcaster ID.
@@ -173,6 +188,9 @@ public static class JoltTwitchAPI
   ///   try again in case of expired token.
   /// </remarks>
   /// <typeparam name="T">The type of the result of the call.</typeparam>
+  /// <param name="comment">
+  ///   Comment so I know where the heck the call is coming from.
+  /// </param>
   /// <param name="call">The call to make.</param>
   /// <param name="callType">
   ///   Whether to make the call using the app access token, the
@@ -180,7 +198,7 @@ public static class JoltTwitchAPI
   ///   access token.
   /// </param>
   /// <returns>(Task) The result of the call.</returns>
-  internal static async Task<T> Call<T>(TwitchAPICallWithTwoUserIDsAndReturnValueAsync<T> call,
+  internal static async Task<T> Call<T>(string comment, TwitchAPICallWithTwoUserIDsAndReturnValueAsync<T> call,
     JoltTwitchTokenType callType = JoltTwitchTokenType.Streamer)
   {
     if (!JoltTwitchAccountManager.HasActiveAccount) throw new NoActiveAccountException();

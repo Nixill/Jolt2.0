@@ -24,14 +24,17 @@ public partial class JoltEventService : IHostedService
     var evt = args.Notification.Payload.Event;
     if (evt.Message.Text == "!ping")
     {
-      await JoltTwitchAPI.Call((api, sid, cbid) => api.Helix.Chat.SendChatMessage(request: new SendChatMessageRequest
-      {
-        BroadcasterId = sid,
-        SenderId = cbid,
-        Message = "Pong!",
-        ForSourceOnly = true,
-        ReplyParentMessageId = evt.MessageId
-      }), JoltTwitchTokenType.AppToken);
+      await JoltTwitchAPI.Call(
+        "Reply to ping (test)",
+        (api, sid, cbid) => api.Helix.Chat.SendChatMessage(request: new SendChatMessageRequest
+        {
+          BroadcasterId = sid,
+          SenderId = cbid,
+          Message = "Pong!",
+          ForSourceOnly = true,
+          ReplyParentMessageId = evt.MessageId
+        }), JoltTwitchTokenType.AppToken
+      );
     }
   }
 }

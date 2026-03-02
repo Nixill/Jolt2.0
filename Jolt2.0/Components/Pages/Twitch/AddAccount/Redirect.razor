@@ -17,6 +17,7 @@ Redirecting...
   protected override void OnParametersSet()
   {
     Uri currentUri = NavMan.ToAbsoluteUri(NavMan.Uri);
+    var scopes = (Type == "chatbot") ? JoltTwitchAccountManager.ChatBotAuthScopeString : JoltTwitchAccountManager.StreamerAuthScopeString;
 
     UriBuilder builder = new() {
       Host = "id.twitch.tv",
@@ -24,7 +25,7 @@ Redirecting...
       Query = "response_type=code"
         + $"&client_id={Data.Twitch.ClientID}"
         + $"&redirect_uri=http://{currentUri.Host}{(currentUri.IsDefaultPort ? "" : $":{currentUri.Port}")}/twitch/accounts/add/{Type}-in"
-        + $"&scopes={HttpUtility.UrlEncode(JoltTwitchAccountManager.ChatBotAuthScopeString)}"
+        + $"&scope={HttpUtility.UrlEncode(scopes)}"
         + $"&state={State ?? JoltTwitchAccountManager.GetChangeState()}"
         + $"&force_verify=true"
     };

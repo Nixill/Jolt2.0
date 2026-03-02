@@ -93,7 +93,7 @@ public static class JoltTwitchAccountManager
   static string[] StreamerAuthScopes => [..
     typeof(JoltTwitchAccountManager).Assembly
       .GetTypes()
-      .SelectMany(t => t.GetMethods())
+      .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
       .SelectMany(m => m.GetCustomAttributes<UsesAuthScopeAttribute>())
       .Where(a => a.TokenType == JoltTwitchTokenType.Streamer)
       .Select(a => a.Scope)
@@ -121,7 +121,7 @@ public static class JoltTwitchAccountManager
   static string[] ChatBotAuthScopes => [..
     typeof(JoltTwitchAccountManager).Assembly
       .GetTypes()
-      .SelectMany(t => t.GetMethods())
+      .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
       .SelectMany(m => m.GetCustomAttributes<UsesAuthScopeAttribute>())
       .Where(a => a.TokenType == JoltTwitchTokenType.ChatBot)
       .Select(a => a.Scope)
@@ -131,7 +131,7 @@ public static class JoltTwitchAccountManager
   ///   The auth scopes needed by a streamer twitch account,
   ///   space-separated.
   /// </summary>
-  public static string ChatBotAuthScopeString => string.Join(" ", StreamerAuthScopes);
+  public static string ChatBotAuthScopeString => string.Join(" ", ChatBotAuthScopes);
 
   /// <summary>
   ///   Determines whether a list of scopes includes all scopes needed for

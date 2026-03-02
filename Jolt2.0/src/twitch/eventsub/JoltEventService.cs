@@ -64,32 +64,51 @@ public partial class JoltEventService : IHostedService
       return;
     }
 
-    // Let's establish our conduit now
+    // If a conduit is already established, delete it.
+    // (I am NOT dealing with multiplexing the conduits across users.)
+    var existingConduits = await JoltTwitchAPI.Call("JoltEventService: Get existing conduits",
+      api => api.Helix.EventSub.GetConduits(), JoltTwitchTokenType.AppToken);
+
+    foreach (var conduit in existingConduits.Data)
+    {
+      _ = JoltTwitchAPI.Call(
+        "JoltEventService: Delete conduit",
+        api => api.Helix.EventSub.DeleteConduit(conduit.Id),
+        JoltTwitchTokenType.AppToken
+      );
+    }
+
+    // Let's establish our new conduit now
     // We really only need one
-    var conduits = await JoltTwitchAPI.Call(api => api.Helix.EventSub.CreateConduits(
-      request: new CreateConduitsRequest { ShardCount = 1 }
-    ), JoltTwitchTokenType.AppToken);
+    var conduits = await JoltTwitchAPI.Call("JoltEventService: Create conduit",
+      api => api.Helix.EventSub.CreateConduits(
+        request: new CreateConduitsRequest { ShardCount = 1 }
+      ), JoltTwitchTokenType.AppToken);
 
     // Assign the transport to this existing websocket session
-    var transports = await JoltTwitchAPI.Call(api => api.Helix.EventSub.UpdateConduitShards(
-      request: new UpdateConduitShardsRequest
-      {
-        ConduitId = conduits.Data[0].Id,
-        Shards = [new ShardUpdate { Id = "0", Transport = new TransportUpdate { Method = "websocket", SessionId = Client.SessionId } }]
-      }
-    ), JoltTwitchTokenType.AppToken);
+    var transports = await JoltTwitchAPI.Call("JoltEventService: Update conduit shard",
+      api => api.Helix.EventSub.UpdateConduitShards(
+        request: new UpdateConduitShardsRequest
+        {
+          ConduitId = conduits.Data[0].Id,
+          Shards = [new ShardUpdate { Id = "0", Transport = new TransportUpdate { Method = "websocket", SessionId = Client.SessionId } }]
+        }
+      ), JoltTwitchTokenType.AppToken);
 
     // Get all the EventSub subscription types
     IEnumerable<TwitchEventAttribute> subscriptions = typeof(JoltEventService).Assembly
       .GetTypes()
-      .SelectMany(t => t.GetMethods())
+      .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
       .SelectMany(t => t.GetCustomAttributes<TwitchEventAttribute>());
 
     // Subscribe to those events
     foreach (var sub in subscriptions)
     {
-      _ = JoltTwitchAPI.Call(api => api.Helix.EventSub.CreateEventSubSubscriptionAsync(sub.Name, sub.Version,
-        sub.Conditions.GetCondition(), EventSubTransportMethod.Conduit, conduitId: conduits.Data[0].Id));
+      _ = JoltTwitchAPI.Call("JoltEventService: Subscribe to event",
+        api => api.Helix.EventSub.CreateEventSubSubscriptionAsync(sub.Name, sub.Version,
+          sub.Conditions.GetCondition(), EventSubTransportMethod.Conduit, conduitId: conduits.Data[0].Id),
+        JoltTwitchTokenType.AppToken
+      );
     }
   }
 
@@ -123,7 +142,7 @@ public partial class JoltEventService : IHostedService
   /// <returns>(Task, void.)</returns>
   internal async Task ConnectAsync()
   {
-    await Client.ConnectAsync();
+    if (!Connected) await Client.ConnectAsync();
   }
 
   /// <summary>
@@ -132,7 +151,7 @@ public partial class JoltEventService : IHostedService
   /// <returns>(Task, void.)</returns>
   internal async Task DisconnectAsync()
   {
-    await Client.DisconnectAsync();
+    if (Connected) await Client.DisconnectAsync();
   }
 }
 
