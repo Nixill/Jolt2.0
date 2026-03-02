@@ -7,3 +7,6 @@
 [submodule "CSharp.Nixill.JSON"]
 	path = CSharp.Nixill.JSON
 	url = ../CSharp.Nixill.JSON/
+[submodule "TwitchInteractionsLib"]
+	path = TwitchInteractionsLib
+	url = https://github.com/Nixill/TwitchInteractionsLib

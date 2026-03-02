@@ -3,4 +3,5 @@
     <Project Path="CSharp.Nixill/CSharp.Nixill/CSharp.Nixill.csproj" />
   </Folder>
   <Project Path="Jolt2.0/Jolt2.0.csproj" />
+  <Project Path="TwitchInteractionsLib/TwitchInteractionsLib.csproj" />
 </Solution>
