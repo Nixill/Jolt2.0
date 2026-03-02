@@ -151,7 +151,11 @@ public partial class JoltEventService : IHostedService
   /// <returns>(Task, void.)</returns>
   internal async Task DisconnectAsync()
   {
-    if (Connected) await Client.DisconnectAsync();
+    if (Connected)
+    {
+      await Client.DisconnectAsync();
+      Connected = false;
+    }
   }
 }
 

@@ -3,6 +3,7 @@
 @using Nixill.Streaming.JoltBot.BotData
 @using Nixill.Streaming.JoltBot.NodaTime
 @using Nixill.Streaming.JoltBot.Twitch
+@using Nixill.Streaming.JoltBot.Twitch.EventSub
 
 <PageTitle>Twitch Connection Dashboard</PageTitle>
 
@@ -16,6 +17,20 @@
     Jolt is connected to the streamer account <TwitchAccount Account="@accounts.Streamer" BoldText WithLink />
     and the chat bot account  <TwitchAccount Account="@accounts.ChatBot" BoldText WithLink />.
   </MudText>
+
+  @if (JoltEventService.Instance.Connected) {
+    <MudText>
+      The Twitch EventSub service is currently <strong>connected</strong>. Click here to
+      <MudButton OnClick="DisconnectEventSub" Color="Color.Error" Variant="Variant.Filled">Disconnect</MudButton>.
+    </MudText>
+  }
+  else
+  {
+    <MudText>
+      The Twitch EventSub service is currently <strong>disconnected</strong>. Click here to
+      <MudButton OnClick="ConnectEventSub" Color="Color.Primary" Variant="Variant.Filled">Connect</MudButton>.
+    </MudText>
+  }
 }
 else
 {
@@ -23,4 +38,18 @@ else
     Jolt is not connected to any accounts. Go to the <MudLink Href="/twitch/accounts">Accounts page</MudLink>
     to fix that.
   </MudText>
+}
+
+@code {
+  private async Task ConnectEventSub(MouseEventArgs args)
+  {
+    await JoltEventService.Instance.ConnectAsync();
+    StateHasChanged();
+  }
+
+  private async Task DisconnectEventSub(MouseEventArgs args)
+  {
+    await JoltEventService.Instance.DisconnectAsync();
+    StateHasChanged();
+  }
 }

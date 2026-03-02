@@ -74,7 +74,7 @@ public static class JoltTwitchAPI
   ///   access token.
   /// </param>
   /// <returns>(Task, void.)</returns>
-  internal static Task Call(string comment, TwitchAPICallAsync call, JoltTwitchTokenType callType = JoltTwitchTokenType.Streamer)
+  internal static Task Call(string comment, TwitchAPICallAsync call, JoltTwitchTokenType callType)
     => Call(comment, (api, _, _) => call(api), callType);
 
   /// <summary>
@@ -99,7 +99,7 @@ public static class JoltTwitchAPI
   ///   access token.
   /// </param>
   /// <returns>(Task, void.)</returns>
-  internal static Task Call(string comment, TwitchAPICallWithUserIDAsync call, JoltTwitchTokenType callType = JoltTwitchTokenType.Streamer)
+  internal static Task Call(string comment, TwitchAPICallWithUserIDAsync call, JoltTwitchTokenType callType)
     => Call(comment, (api, id, _) => call(api, id), callType);
 
   /// <summary>
@@ -121,7 +121,7 @@ public static class JoltTwitchAPI
   /// </param>
   /// <returns>(Task, void.)</returns>
   internal static Task Call(string comment, TwitchAPICallWithTwoUserIDsAsync call,
-    JoltTwitchTokenType callType = JoltTwitchTokenType.Streamer)
+    JoltTwitchTokenType callType)
   => Call(comment, async (api, sid, cbid) =>
     {
       await call(api, sid, cbid);
@@ -149,7 +149,7 @@ public static class JoltTwitchAPI
   /// </param>
   /// <returns>(Task) The result of the call.</returns>
   internal static Task<T> Call<T>(string comment, TwitchAPICallWithReturnValueAsync<T> call,
-    JoltTwitchTokenType callType = JoltTwitchTokenType.Streamer)
+    JoltTwitchTokenType callType)
     => Call(comment, (api, _, _) => call(api), callType);
 
   /// <summary>
@@ -176,7 +176,7 @@ public static class JoltTwitchAPI
   /// </param>
   /// <returns>(Task) The result of the call.</returns>
   internal static Task<T> Call<T>(string comment, TwitchAPICallWithUserIDAndReturnValueAsync<T> call,
-    JoltTwitchTokenType callType = JoltTwitchTokenType.Streamer)
+    JoltTwitchTokenType callType)
     => Call(comment, (api, id, _) => call(api, id), callType);
 
   /// <summary>
@@ -199,7 +199,7 @@ public static class JoltTwitchAPI
   /// </param>
   /// <returns>(Task) The result of the call.</returns>
   internal static async Task<T> Call<T>(string comment, TwitchAPICallWithTwoUserIDsAndReturnValueAsync<T> call,
-    JoltTwitchTokenType callType = JoltTwitchTokenType.Streamer)
+    JoltTwitchTokenType callType)
   {
     if (!JoltTwitchAccountManager.HasActiveAccount) throw new NoActiveAccountException();
 

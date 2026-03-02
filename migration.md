@@ -14,7 +14,7 @@ The following files from Jolt 1.0 have been implemented in Jolt 2.0 or related l
   - [ ] RewardsJson.cs
   - [ ] SuperHexagonCSVs.cs
   - [ ] SuperHexagonJson.cs
-  - [ ] TwitchJson.cs
+  - [x] TwitchJson.cs
   - [ ] UpcomingJson.cs
 - [ ] discord
   - [ ] WebhookClient.cs
@@ -55,7 +55,7 @@ The following files from Jolt 1.0 have been implemented in Jolt 2.0 or related l
   - [ ] StreamClock.cs
 - [ ] twitch
   - [ ] api-client
-    - [ ] JoltApiClient.cs
+    - [x] JoltApiClient.cs
     - [ ] JoltCache.cs
     - [ ] JoltHelperMethods.cs
   - [ ] common
@@ -84,7 +84,7 @@ The following files from Jolt 1.0 have been implemented in Jolt 2.0 or related l
     - [ ] CommandDispatch.cs
     - [ ] CommandExceptions.cs
     - [ ] Deserializers.cs
-    - [ ] JoltChatBot.cs
+    - [x] ~~JoltChatBot.cs~~ *(irc deprecated)*
   - [ ] JoltTwitchMain.cs
 - [ ] JoltMain.cs
 - [x] Logger.cs
