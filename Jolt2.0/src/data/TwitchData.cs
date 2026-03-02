@@ -32,6 +32,11 @@ public class TwitchData
   public required string Secret { get; set; }
 
   /// <summary>
+  ///   This application's app access token.
+  /// </summary>
+  public required string AppToken { get; set; }
+
+  /// <summary>
   ///   Which pair of accounts is currently active.
   /// </summary>
   public string? ActivePairUID { get; set; } = null;

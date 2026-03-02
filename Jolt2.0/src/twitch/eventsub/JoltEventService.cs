@@ -1,5 +1,9 @@
 using System.Reflection;
 using Nixill.Streaming.JoltBot.BotData;
+using Nixill.Streaming.JoltBot.Twitch.API;
+using TwitchLib.Api.Core.Enums;
+using TwitchLib.Api.Helix.Models.EventSub.Conduits.CreateConduits;
+using TwitchLib.Api.Helix.Models.EventSub.Conduits.Shards.UpdateConduitShards;
 using TwitchLib.EventSub.Websockets;
 using TwitchLib.EventSub.Websockets.Core.EventArgs;
 
@@ -10,6 +14,11 @@ namespace Nixill.Streaming.JoltBot.Twitch.EventSub;
 /// </summary>
 public partial class JoltEventService : IHostedService
 {
+  /// <summary>
+  ///   The latest created instance of the service.
+  /// </summary>
+  internal static JoltEventService Instance = null!;
+
   /// <summary>
   ///   Logger.
   /// </summary>
@@ -32,6 +41,8 @@ public partial class JoltEventService : IHostedService
 
   public JoltEventService(ILogger<JoltEventService> _, EventSubWebsocketClient client)
   {
+    Instance = this;
+
     Client = client ?? throw new ArgumentNullException(nameof(client));
 
     Client.WebsocketConnected += WebsocketConnected;
@@ -53,8 +64,20 @@ public partial class JoltEventService : IHostedService
       return;
     }
 
-    // Let's establish our conduits now
+    // Let's establish our conduit now
+    // We really only need one
+    var conduits = await JoltTwitchAPI.Call(api => api.Helix.EventSub.CreateConduits(
+      request: new CreateConduitsRequest { ShardCount = 1 }
+    ), JoltTwitchTokenType.AppToken);
 
+    // Assign the transport to this existing websocket session
+    var transports = await JoltTwitchAPI.Call(api => api.Helix.EventSub.UpdateConduitShards(
+      request: new UpdateConduitShardsRequest
+      {
+        ConduitId = conduits.Data[0].Id,
+        Shards = [new ShardUpdate { Id = "0", Transport = new TransportUpdate { Method = "websocket", SessionId = Client.SessionId } }]
+      }
+    ), JoltTwitchTokenType.AppToken);
 
     // Get all the EventSub subscription types
     IEnumerable<TwitchEventAttribute> subscriptions = typeof(JoltEventService).Assembly
@@ -62,17 +85,22 @@ public partial class JoltEventService : IHostedService
       .SelectMany(t => t.GetMethods())
       .SelectMany(t => t.GetCustomAttributes<TwitchEventAttribute>());
 
-
+    // Subscribe to those events
+    foreach (var sub in subscriptions)
+    {
+      _ = JoltTwitchAPI.Call(api => api.Helix.EventSub.CreateEventSubSubscriptionAsync(sub.Name, sub.Version,
+        sub.Conditions.GetCondition(), EventSubTransportMethod.Conduit, conduitId: conduits.Data[0].Id));
+    }
   }
 
   private async Task WebsocketDisconnected(object sender, EventArgs args)
   {
-    throw new NotImplementedException();
+    Connected = false;
   }
 
   private async Task WebsocketReconnected(object sender, EventArgs args)
   {
-    throw new NotImplementedException();
+    Connected = true;
   }
 
   /// <inheritdoc/>
@@ -85,6 +113,24 @@ public partial class JoltEventService : IHostedService
 
   /// <inheritdoc/>
   public async Task StopAsync(CancellationToken cancellationToken)
+  {
+    await Client.DisconnectAsync();
+  }
+
+  /// <summary>
+  ///   Connect to the websockets.
+  /// </summary>
+  /// <returns>(Task, void.)</returns>
+  internal async Task ConnectAsync()
+  {
+    await Client.ConnectAsync();
+  }
+
+  /// <summary>
+  ///   Disconnect from the websockets.
+  /// </summary>
+  /// <returns>(Task, void.)</returns>
+  internal async Task DisconnectAsync()
   {
     await Client.DisconnectAsync();
   }

@@ -15,7 +15,7 @@ namespace Nixill.Streaming.JoltBot.Twitch;
 ///   chat bot account (true).
 /// </param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public class UsesAuthScopeAttribute(string scope, bool chatBot = false) : Attribute
+public class UsesAuthScopeAttribute(string scope, JoltTwitchTokenType type) : Attribute
 {
   /// <summary>
   ///   The scope used.
@@ -26,7 +26,7 @@ public class UsesAuthScopeAttribute(string scope, bool chatBot = false) : Attrib
   ///   Whether this scope is used on the streamer account (false) or the
   ///   chat bot account (true).
   /// </summary>
-  public readonly bool IsChatBot = chatBot;
+  public readonly JoltTwitchTokenType TokenType = type;
 }
 
 /// <summary>
@@ -36,10 +36,6 @@ public class UsesAuthScopeAttribute(string scope, bool chatBot = false) : Attrib
 ///   Don't forget to also add a <see cref="UsesAuthScopeAttribute"/> to
 ///   the method as applicable!
 /// </remarks>
-/// <param name="isChatBot">
-///   Whether this event should be scoped to the chat bot (<see langword="true"/>)
-///   or the streamer (<see langword="false"/>).
-/// </param>
 /// <param name="name">
 ///   The name of the event.
 /// </param>
@@ -51,51 +47,11 @@ public class UsesAuthScopeAttribute(string scope, bool chatBot = false) : Attrib
 /// </param>
 /// <seealso href="https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/"/>
 [AttributeUsage(AttributeTargets.Method)]
-public class TwitchEventAttribute(bool isChatBot, string name, string version, TwitchEventCondition conditions) : Attribute
+public class TwitchEventAttribute(string name, string version, TwitchEventCondition conditions) : Attribute
 {
-  public readonly bool IsChatBot = isChatBot;
   public readonly string Name = name;
   public readonly string Version = version;
   public readonly TwitchEventCondition Conditions = conditions;
-}
-
-/// <summary>
-///   Event conditions for Twitch EventSub.
-/// </summary>
-[Flags]
-public enum TwitchEventCondition : uint
-{
-  None = 0,
-
-  /// <summary>
-  ///   broadcaster_user_id = (streamer's id)
-  /// </summary>
-  Broadcaster = 1 << 0,
-
-  /// <summary>
-  ///   moderator_user_id = (streamer's id)
-  /// </summary>
-  Moderator = 1 << 1,
-
-  /// <summary>
-  ///   user_id = (streamer's id)
-  /// </summary>
-  User = 1 << 2,
-
-  /// <summary>
-  ///   from_broadcaster_user_id = (streamer's id)
-  /// </summary>
-  FromBroadcaster = 1 << 3,
-
-  /// <summary>
-  ///   to_broadcaster_user_id = (streamer's id)
-  /// </summary>
-  ToBroadcaster = 1 << 4,
-
-  /// <summary>
-  ///   user_id = (chat bot's id)
-  /// </summary>
-  UserChatBot = 1 << 5,
 }
 
 /// <summary>
@@ -104,11 +60,12 @@ public enum TwitchEventCondition : uint
 public static class TwitchEventConditions
 {
   /// <summary>
-  ///   Gets a <see cref="JsonObject"/> with the conditions filled in.
+  ///   Gets a <see cref="Dictionary{string, JsonNode?}"/> with the
+  ///   conditions filled in.
   /// </summary>
   /// <param name="condition">The composite condition.</param>
   /// <returns>The JsonObject.</returns>
-  public static JsonObject GetConditionObject(this TwitchEventCondition condition)
+  public static Dictionary<string, string> GetCondition(this TwitchEventCondition condition)
     => new(condition.GetConditionPairs());
 
   /// <summary>
@@ -117,8 +74,8 @@ public static class TwitchEventConditions
   /// </summary>
   /// <param name="condition">The composite condition.</param>
   /// <returns>The KeyValuePairs.</returns>
-  public static IEnumerable<KeyValuePair<string, JsonNode?>> GetConditionPairs(this TwitchEventCondition condition)
-    => condition.GetFlags().Select(c => new KeyValuePair<string, JsonNode?>(
+  public static IEnumerable<KeyValuePair<string, string>> GetConditionPairs(this TwitchEventCondition condition)
+    => condition.GetFlags().Select(c => new KeyValuePair<string, string>(
       key: c switch
       {
         TwitchEventCondition.Broadcaster => "broadcaster_user_id",
@@ -132,8 +89,8 @@ public static class TwitchEventConditions
       {
         TwitchEventCondition.Broadcaster or TwitchEventCondition.Moderator or TwitchEventCondition.User
           or TwitchEventCondition.FromBroadcaster or TwitchEventCondition.ToBroadcaster
-            => JoltTwitchAccountManager.ActiveStreamerUID,
-        TwitchEventCondition.UserChatBot => JoltTwitchAccountManager.ActiveChatBotUID,
+            => JoltTwitchAccountManager.ActiveStreamerUID!,
+        TwitchEventCondition.UserChatBot => JoltTwitchAccountManager.ActiveChatBotUID!,
         _ => default!
       }
     ));

@@ -1,8 +1,10 @@
 using System.Reflection;
 using Nixill.Streaming.JoltBot.BotData;
 using Nixill.Streaming.JoltBot.Twitch.API;
+using Nixill.Streaming.JoltBot.Twitch.EventSub;
 using Nixill.Utils.Extensions;
 using NodaTime;
+using TwitchLib.Api;
 using TwitchLib.Api.Core.Exceptions;
 
 namespace Nixill.Streaming.JoltBot.Twitch;
@@ -39,6 +41,9 @@ public static class JoltTwitchAccountManager
     Data.Twitch.ActivePairUID = uid;
     Data.Twitch.Save();
 
+    JoltTwitchAPI.ChatBotTokenClient.Settings.AccessToken = ActiveChatBotUID;
+    JoltTwitchAPI.StreamerTokenClient.Settings.AccessToken = ActiveStreamerUID;
+
     if (uid != null) await OpenNewAccounts();
   }
 
@@ -48,7 +53,7 @@ public static class JoltTwitchAccountManager
   /// <returns>(Task, void.)</returns>
   private static async Task CloseOpenAccounts()
   {
-    // awaiting things to add here...
+    await JoltEventService.Instance.DisconnectAsync();
   }
 
   /// <summary>
@@ -57,7 +62,7 @@ public static class JoltTwitchAccountManager
   /// <returns>(Task, void.)</returns>
   private static async Task OpenNewAccounts()
   {
-    // awaiting things to add here...
+    await JoltEventService.Instance.ConnectAsync();
   }
 
   /// <summary>
@@ -90,7 +95,7 @@ public static class JoltTwitchAccountManager
       .GetTypes()
       .SelectMany(t => t.GetMethods())
       .SelectMany(m => m.GetCustomAttributes<UsesAuthScopeAttribute>())
-      .Where(a => !a.IsChatBot)
+      .Where(a => a.TokenType == JoltTwitchTokenType.Streamer)
       .Select(a => a.Scope)
   ];
 
@@ -118,7 +123,7 @@ public static class JoltTwitchAccountManager
       .GetTypes()
       .SelectMany(t => t.GetMethods())
       .SelectMany(m => m.GetCustomAttributes<UsesAuthScopeAttribute>())
-      .Where(a => a.IsChatBot)
+      .Where(a => a.TokenType == JoltTwitchTokenType.ChatBot)
       .Select(a => a.Scope)
   ];
 
@@ -184,19 +189,17 @@ public static class JoltTwitchAccountManager
   /// </summary>
   /// <param name="token">The account's authentication code.</param>
   /// <param name="redirect">The redirect uri.</param>
-  /// <param name="isChatBot">
-  ///   Whether this is a streamer or chat bot account.
-  /// </param>
+  /// <param name="tokenType">Which token type is being added.</param>
   /// <returns>(Task, void.)</returns>
-  public static async Task AddAccount(string code, string redirect, bool isChatBot)
+  public static async Task AddAccount(string code, string redirect, JoltTwitchTokenType tokenType)
   {
-    var authResponse = await JoltTwitchAPI.Client.Auth.GetAccessTokenFromCodeAsync(code, Data.Twitch.Secret, redirect);
+    var authResponse = await JoltTwitchAPI.AppTokenClient.Auth.GetAccessTokenFromCodeAsync(code, Data.Twitch.Secret, redirect);
 
     var token = authResponse.AccessToken;
 
-    var tokenResponse = await JoltTwitchAPI.Client.Auth.ValidateAccessTokenAsync(token);
+    var tokenResponse = await JoltTwitchAPI.AppTokenClient.Auth.ValidateAccessTokenAsync(token);
 
-    var infoResponse = (await JoltTwitchAPI.Client.Helix.Users.GetUsersAsync(accessToken: token))
+    var infoResponse = (await JoltTwitchAPI.AppTokenClient.Helix.Users.GetUsersAsync(accessToken: token))
       .Users.First();
 
     JoltTwitchAccountInfo acct = new(
@@ -209,7 +212,7 @@ public static class JoltTwitchAccountManager
       AvatarURL: infoResponse.ProfileImageUrl
     );
 
-    if (isChatBot)
+    if (tokenType == JoltTwitchTokenType.ChatBot)
     {
       var newPair = new JoltTwitchAccountPair(
         Streamer: PendingStreamerAccount!.Value,

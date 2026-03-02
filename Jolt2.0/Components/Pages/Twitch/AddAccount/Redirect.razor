@@ -11,8 +11,6 @@ Redirecting...
   [Parameter]
   public string? Type { get; set; }
 
-  public bool IsChatBot => Type == "chatbot";
-
   [SupplyParameterFromQuery]
   public string? State { get; set; }
 

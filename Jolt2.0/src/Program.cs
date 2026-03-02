@@ -3,6 +3,7 @@ using Jolt2._0.Components;
 using TwitchLib.EventSub.Websockets.Extensions;
 using Nixill.Streaming.JoltBot.Scheduled;
 using Nixill.Streaming.JoltBot.Twitch.EventSub;
+using Nixill.Streaming.JoltBot.Twitch;
 
 namespace Nixill.Streaming.JoltBot;
 
@@ -54,6 +55,7 @@ public static class JoltMain
 
     // Other setup stuff time
     ScheduledActions.RunAll();
+    TwitchSetup.Run();
 
     app.Run();
   }

@@ -14,7 +14,17 @@
   [Parameter]
   public string? Type { get; set; }
 
-  public bool IsChatBot => Type == "chatbot";
+  public JoltTwitchTokenType TokenType => (Type?.ToLower()) switch {
+    "streamer" => JoltTwitchTokenType.Streamer,
+    "chatbot" or "chat-bot" /* don't remember which */ => JoltTwitchTokenType.ChatBot,
+    _ => TextInvalidTokenType()
+  };
+
+  JoltTwitchTokenType TextInvalidTokenType()
+  {
+    Text = "Invalid token type.";
+    throw new Exception("Invalid token type.");
+  }
 
   [SupplyParameterFromQuery]
   public string? Code { get; set; }
@@ -49,9 +59,9 @@
       return;
     }
 
-    await JoltTwitchAccountManager.AddAccount(Code!, NavMan.Uri[0..NavMan.Uri.IndexOf('?')], IsChatBot);
+    await JoltTwitchAccountManager.AddAccount(Code!, NavMan.Uri[0..NavMan.Uri.IndexOf('?')], TokenType);
     Text = "Success!"; 
-    if (!IsChatBot)
+    if (TokenType == JoltTwitchTokenType.Streamer)
     {
       NavMan.NavigateTo($"/twitch/accounts/add/chatbot-out?state={State}");
     }
