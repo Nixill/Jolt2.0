@@ -52,7 +52,7 @@ public partial class JoltEventService : IHostedService
     RegisterEventHandlers(Client);
   }
 
-  private async Task WebsocketConnected(object sender, WebsocketConnectedArgs args)
+  private async Task WebsocketConnected(object? sender, WebsocketConnectedArgs args)
   {
     Connected = true;
 
@@ -112,12 +112,12 @@ public partial class JoltEventService : IHostedService
     }
   }
 
-  private async Task WebsocketDisconnected(object sender, EventArgs args)
+  private async Task WebsocketDisconnected(object? sender, EventArgs args)
   {
     Connected = false;
   }
 
-  private async Task WebsocketReconnected(object sender, EventArgs args)
+  private async Task WebsocketReconnected(object? sender, EventArgs args)
   {
     Connected = true;
   }

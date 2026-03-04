@@ -1,7 +1,7 @@
 using Nixill.Streaming.JoltBot.Twitch.API;
 using TwitchLib.Api.Helix.Models.Channels.SendChatMessage;
+using TwitchLib.EventSub.Core.EventArgs.Channel;
 using TwitchLib.EventSub.Websockets;
-using TwitchLib.EventSub.Websockets.Core.EventArgs.Channel;
 
 namespace Nixill.Streaming.JoltBot.Twitch.EventSub;
 
@@ -16,12 +16,10 @@ public partial class JoltEventService : IHostedService
     TwitchEventCondition.Broadcaster | TwitchEventCondition.UserChatBot)]
   [UsesAuthScope("user:read:chat", JoltTwitchTokenType.ChatBot)]
   [UsesAuthScope("user:bot", JoltTwitchTokenType.ChatBot)]
-  // unsure which of these to use
-  [UsesAuthScope("channel:bot", JoltTwitchTokenType.ChatBot)]
   [UsesAuthScope("channel:bot", JoltTwitchTokenType.Streamer)]
-  private async Task OnChatMessageReceived(object sender, ChannelChatMessageArgs args)
+  private async Task OnChatMessageReceived(object? sender, ChannelChatMessageArgs args)
   {
-    var evt = args.Notification.Payload.Event;
+    var evt = args.Payload.Event;
     if (evt.Message.Text == "!ping")
     {
       await JoltTwitchAPI.Call(
