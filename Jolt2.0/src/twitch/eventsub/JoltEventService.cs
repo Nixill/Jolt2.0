@@ -110,10 +110,13 @@ public partial class JoltEventService : IHostedService
         JoltTwitchTokenType.AppToken
       );
     }
+
+    await RegisterInteractions();
   }
 
   private async Task WebsocketDisconnected(object? sender, EventArgs args)
   {
+    Connector.RemoveEventHandlers();
     Connected = false;
   }
 
@@ -153,6 +156,7 @@ public partial class JoltEventService : IHostedService
   {
     if (Connected)
     {
+      Connector.RemoveEventHandlers();
       await Client.DisconnectAsync();
       Connected = false;
     }

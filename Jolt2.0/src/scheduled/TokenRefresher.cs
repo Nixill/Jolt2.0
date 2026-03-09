@@ -1,5 +1,6 @@
 using Nixill.Streaming.JoltBot.BotData;
 using Nixill.Streaming.JoltBot.Twitch;
+using Nixill.Streaming.JoltBot.Twitch.EventSub;
 using NodaTime;
 using TwitchLib.Api;
 using TwitchLib.Api.Core.Exceptions;
@@ -81,6 +82,12 @@ public static class TokenRefresher
         {
           await JoltTwitchAccountManager.RemoveAccount(pair.Streamer.UID);
         }
+      }
+
+      // put the new token in places it's expected to be
+      if (JoltTwitchAccountManager.ActiveAccounts is JoltTwitchAccountPair activePair)
+      {
+        JoltEventService.Instance.Connector.UpdateStreamerToken(activePair.Streamer.UserToken);
       }
 
       await Task.Delay(TimeSpan.FromHours(1));
